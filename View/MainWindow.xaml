@@ -1,0 +1,19 @@
+﻿<telerik:RadWindow x:Class="SSCA.View.MainWindow"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+                   xmlns:navigation="clr-namespace:Telerik.Windows.Controls.Navigation;assembly=Telerik.Windows.Controls.Navigation"
+                   xmlns:local="clr-namespace:SSCA"
+                   navigation:RadWindowInteropHelper.ShowInTaskbar="True"
+                   Header="MainWindow" Height="768" Width="1024" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="7*" />
+            <RowDefinition Height="3*" />
+        </Grid.RowDefinitions>
+        <telerik:RadGridView Grid.Row="0" ItemsSource="{Binding YxjkJkds}" />
+        <telerik:RadGridView Grid.Row="1" ItemsSource="{Binding ExceptionModels}" />
+    </Grid>
+</telerik:RadWindow>
