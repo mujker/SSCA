@@ -78,6 +78,8 @@ namespace SSCA.ViewModel
 
         //线程开始结束标识
         private bool _taskFlag;
+        //转存redis check binding
+        private bool _redisFlag = Settings.RedisFlag;
 
         public MainViewModel()
         {
@@ -111,10 +113,29 @@ namespace SSCA.ViewModel
                 {
                     var client = new EasyClient();
 
+                    /***
+                     * 初始化socket连接, 接受返回数据处理
+                     * HxReceiveFilter为自定义的协议
+                     * ***/
                     client.Initialize(new HxReceiveFilter(), (request) =>
                     {
-                        jkd.JKD_VALUE = request.Key;
-                        jkd.CURR_TIME = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                        try
+                        {
+                            jkd.JKD_VALUE = request.Key;
+                            jkd.CURR_TIME = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                            if (Settings.RedisFlag)
+                            {
+                                jkd.REDIS_SAVE = RedisManager.SetRedisValue(jkd.JKD_ID, jkd.JKD_VALUE).ToString();
+                            }
+                            else
+                            {
+                                jkd.REDIS_SAVE = bool.FalseString;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteLog(ex.Message, ExEnum.Error);
+                        }
                     });
                     // Connect to the server
                     var connected =
@@ -309,6 +330,22 @@ namespace SSCA.ViewModel
             {
                 _selectJkd = value;
                 OnPropertyChanged("SelectJkd");
+            }
+        }
+
+        public bool RedisFlag
+        {
+            get
+            {
+                return _redisFlag;
+            }
+
+            set
+            {
+                _redisFlag = value;
+                Settings.RedisFlag = value;
+                OnPropertyChanged("RedisFlag");
+                WriteLog($"转存redis参数设置为-{Settings.RedisFlag}", ExEnum.Infor);
             }
         }
     }

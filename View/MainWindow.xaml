@@ -19,7 +19,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <telerik:RadMenu VerticalAlignment="Top" IconColumnWidth="0">
+            <telerik:RadMenu VerticalAlignment="Top">
                 <telerik:RadMenuItem Header="启停">
                     <telerik:RadMenuItem Header="启动">
                         <telerik:EventToCommandBehavior.EventBindings>
@@ -34,7 +34,10 @@
                         </telerik:EventToCommandBehavior.EventBindings>
                     </telerik:RadMenuItem>
                 </telerik:RadMenuItem>
-                <telerik:RadMenuItem Header="配置" />
+                <telerik:RadMenuItem Header="参数" >
+                    <telerik:RadMenuItem Header="转存Redis" IsCheckable="True" IsChecked="{Binding RedisFlag, Mode=TwoWay}">
+                    </telerik:RadMenuItem>
+                </telerik:RadMenuItem>
             </telerik:RadMenu>
             <telerik:RadDocking Grid.Row="1">
                 <telerik:RadDocking.DocumentHost>
@@ -74,6 +77,8 @@
                                                                     DataMemberBinding="{Binding Path=JKD_VALUE}" />
                                         <telerik:GridViewDataColumn Width="50" Header="RMI_ID"
                                                                     DataMemberBinding="{Binding Path=RMI_ID}" />
+                                        <telerik:GridViewDataColumn Width="50" Header="REDIS_SAVE"
+                                                                    DataMemberBinding="{Binding Path=REDIS_SAVE}" />
                                         <telerik:GridViewDataColumn Width="170" Header="CURR_TIME"
                                                                     DataMemberBinding="{Binding Path=CURR_TIME}" />
                                     </telerik:RadGridView.Columns>

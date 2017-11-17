@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using StackExchange.Redis;
 
 //using StackExchange.Redis;
 
@@ -19,6 +20,21 @@ namespace SSCA.Common
             JkdSql = ConfigurationManager.AppSettings["JkdSql"];
             DelayTime = Convert.ToInt32(ConfigurationManager.AppSettings["DelayTime"]);
             ConnectStr = ConfigurationManager.ConnectionStrings["ConnStr"].ConnectionString;
+            ConOption = new ConfigurationOptions()
+            {
+                EndPoints =
+                {
+                    {
+                        ConfigurationManager.AppSettings["redis_ip"],
+                        Convert.ToInt32(ConfigurationManager.AppSettings["redis_port"])
+                    }
+                },
+                Password = ConfigurationManager.AppSettings["redis_pw"]
+            };
+            RedisIp = ConfigurationManager.AppSettings["redis_ip"];
+            RedisPort = ConfigurationManager.AppSettings["redis_port"];
+            RedisPw = ConfigurationManager.AppSettings["redis_pw"];
+            RedisFlag = Convert.ToBoolean(ConfigurationManager.AppSettings["redis_flag"]);
         }
 
         /// <summary>
@@ -54,13 +70,26 @@ namespace SSCA.Common
         /// <summary>
         /// redis连接config
         /// </summary>
-        //        public static ConfigurationOptions ConOption = new ConfigurationOptions()
-        //        {
-        //            EndPoints =
-        //            {
-        //                { ConfigurationManager.AppSettings["redis_ip"], Convert.ToInt32(ConfigurationManager.AppSettings["redis_port"]) }
-        //            },
-        //            Password = ConfigurationManager.AppSettings["redis_pw"]
-        //        };
+        public static ConfigurationOptions ConOption;
+
+        /// <summary>
+        /// redis ip
+        /// </summary>
+        public static string RedisIp;
+
+        /// <summary>
+        /// redis 端口
+        /// </summary>
+        public static string RedisPort;
+
+        /// <summary>
+        /// redis 密码
+        /// </summary>
+        public static string RedisPw;
+
+        /// <summary>
+        /// 是否转存redis标识
+        /// </summary>
+        public static bool RedisFlag;
     }
 }
