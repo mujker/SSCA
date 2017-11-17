@@ -133,6 +133,7 @@ namespace SSCA.ViewModel
                             }
                             else
                             {
+                                WriteLog($"{jkd.JKD_NAME}Socket连接失败,尝试重新连接...", ExEnum.Error);
                                 connected = await client.ConnectAsync(new IPEndPoint(IPAddress.Parse(Settings.RmiIp),
                                     Settings.RmiPort));
                             }
@@ -146,7 +147,7 @@ namespace SSCA.ViewModel
                         }
                         finally
                         {
-                            await Task.Delay(3000);
+                            await Task.Delay(Settings.DelayTime);
                         }
                     }
                     await client.Close();
@@ -212,7 +213,7 @@ namespace SSCA.ViewModel
         {
             try
             {
-                _dbc = new OracleConnection(ConfigurationManager.ConnectionStrings["ConnStr"].ConnectionString);
+                _dbc = new OracleConnection(Settings.ConnectStr);
                 var jkds = _dbc.Query<YXJK_JKD>(Settings.JkdSql);
                 var yxjkJkds = jkds as IList<YXJK_JKD> ?? jkds.ToList();
                 if (!yxjkJkds.Any())
