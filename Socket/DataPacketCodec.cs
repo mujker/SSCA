@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SSCA.Common
+namespace SSCA.Socket
 {
     public class DataPacketCodec
     {

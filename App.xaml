@@ -14,8 +14,11 @@
                     Source="/Telerik.Windows.Themes.Office2013;component/Themes/Telerik.Windows.Controls.GridView.xaml" />
                 <ResourceDictionary
                     Source="/Telerik.Windows.Themes.Office2013;component/Themes/Telerik.Windows.Controls.Input.xaml" />
+                <ResourceDictionary
+                    Source="/Telerik.Windows.Themes.Office2013;component/Themes/Telerik.Windows.Controls.Docking.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="view:MainWindow" BasedOn="{StaticResource RadWindowStyle}" />
+            <Style TargetType="view:DeCodeWindow" BasedOn="{StaticResource RadWindowStyle}" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

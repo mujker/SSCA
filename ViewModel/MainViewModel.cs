@@ -4,11 +4,19 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Dapper;
 using Oracle.ManagedDataAccess.Client;
+using SSCA.Common;
 using SSCA.Model;
+using SSCA.Socket;
+using SSCA.View;
+using SuperSocket.ClientEngine;
+using Telerik.Windows;
 using Telerik.Windows.Controls;
 
 namespace SSCA.ViewModel
@@ -21,17 +29,75 @@ namespace SSCA.ViewModel
         //监控点集合 
         private ObservableCollection<YXJK_JKD> _yxjkJkds = new ObservableCollection<YXJK_JKD>();
 
+        //选择的监控点对象
+        private YXJK_JKD _selectJkd = new YXJK_JKD();
+
+        //RadMenuItem Click Command
+        public DelegateCommand RmcCommand { get; set; }
+
+        //Windows Close Event
+        public DelegateCommand ClosedCommand { get; set; }
+
+        //GridView 右键菜单Item Click
+        public DelegateCommand GridMenuCommand { get; set; }
+
+        private static bool CanExecute(object o)
+        {
+            return true;
+        }
+
+        private void RadMenuItemClick(object obj)
+        {
+            if (obj == null)
+            {
+                return;
+            }
+            var compara = obj.ToString();
+            if (compara.Equals("启动"))
+            {
+                if (_taskFlag)
+                {
+                    return;
+                }
+                _taskFlag = true;
+                TaskStart();
+                WriteLog("启动", ExEnum.Infor);
+            }
+            else if (compara.Equals("停止"))
+            {
+                _taskFlag = false;
+                WriteLog("停止", ExEnum.Infor);
+            }
+        }
+
         //连接数据库接口
         private IDbConnection _dbc;
 
-        //监控点查询sql
-        private const string JkdSql = "SELECT JKD_ID, JKD_NAME, RMI_ID FROM yxjk_jkd where ISRUN = 1";
+        //busy binding
+        private bool _isBusy;
+
+        //线程开始结束标识
+        private bool _taskFlag;
 
         public MainViewModel()
         {
-            InitiJkd();
-            TaskStart();
-            WriteLog("启动", ExEnum.Infor);
+            Task.Factory.StartNew(delegate
+            {
+                try
+                {
+                    IsBusy = true;
+                    InitiCommand();
+                    InitiJkd();
+                }
+                catch (Exception e)
+                {
+                    WriteLog(e.Message, ExEnum.Error);
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            });
         }
 
         /// <summary>
@@ -39,7 +105,104 @@ namespace SSCA.ViewModel
         /// </summary>
         private void TaskStart()
         {
-            Parallel.ForEach(YxjkJkds, jkd => { Task.Factory.StartNew(delegate { }); });
+            Parallel.ForEach(YxjkJkds, jkd =>
+            {
+                Task.Factory.StartNew(async delegate
+                {
+                    var client = new EasyClient();
+
+                    client.Initialize(new HxReceiveFilter(), (request) =>
+                    {
+                        jkd.JKD_VALUE = request.Key;
+                        jkd.CURR_TIME = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                    });
+                    // Connect to the server
+                    var connected =
+                        await client.ConnectAsync(new IPEndPoint(IPAddress.Parse(Settings.RmiIp), Settings.RmiPort));
+
+                    while (_taskFlag)
+                    {
+                        try
+                        {
+                            if (connected)
+                            {
+                                //加密
+                                var enStr = DataPacketCodec.Encode($"ri,{jkd.JKD_ID}", Settings.CryptKey) + "#";
+                                // Send data to the server
+                                client.Send(Encoding.UTF8.GetBytes(enStr));
+                            }
+                            else
+                            {
+                                connected = await client.ConnectAsync(new IPEndPoint(IPAddress.Parse(Settings.RmiIp),
+                                    Settings.RmiPort));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            WriteLog(e.Message, ExEnum.Error);
+                            // reconnet
+                            connected = await client.ConnectAsync(new IPEndPoint(IPAddress.Parse(Settings.RmiIp),
+                                Settings.RmiPort));
+                        }
+                        finally
+                        {
+                            await Task.Delay(3000);
+                        }
+                    }
+                    await client.Close();
+                    WriteLog($"{jkd.JKD_NAME} socket close", ExEnum.Infor);
+                });
+            });
+        }
+
+        /// <summary>
+        /// 初始化Command
+        /// </summary>
+        private void InitiCommand()
+        {
+            RmcCommand = new DelegateCommand(RadMenuItemClick, CanExecute);
+            ClosedCommand = new DelegateCommand(WindowClosed, CanExecute);
+            GridMenuCommand = new DelegateCommand(GridMenuItemClick, CanExecute);
+        }
+
+        private void GridMenuItemClick(object obj)
+        {
+            try
+            {
+                if (obj == null)
+                {
+                    return;
+                }
+                var compara = obj.ToString();
+                if (compara.Equals("清空"))
+                {
+                    ExceptionModels?.Clear();
+                }
+                else if (compara.Equals("解密"))
+                {
+                    if (string.IsNullOrEmpty(SelectJkd.JKD_VALUE))
+                    {
+                        return;
+                    }
+                    if (SelectJkd.JKD_VALUE.TrimEnd('#').Length == 0)
+                    {
+                        return;
+                    }
+                    DeCodeWindow dcw = new DeCodeWindow();
+                    var deStr = DataPacketCodec.Decode(SelectJkd.JKD_VALUE.TrimEnd('#'), Settings.CryptKey);
+                    dcw.Tb1.Text = deStr;
+                    dcw.ShowDialog();
+                }
+            }
+            catch (Exception e)
+            {
+                WriteLog(e.Message, ExEnum.Error);
+            }
+        }
+
+        private void WindowClosed(object obj)
+        {
+            _taskFlag = false;
         }
 
         /// <summary>
@@ -50,7 +213,7 @@ namespace SSCA.ViewModel
             try
             {
                 _dbc = new OracleConnection(ConfigurationManager.ConnectionStrings["ConnStr"].ConnectionString);
-                var jkds = _dbc.Query<YXJK_JKD>(JkdSql);
+                var jkds = _dbc.Query<YXJK_JKD>(Settings.JkdSql);
                 var yxjkJkds = jkds as IList<YXJK_JKD> ?? jkds.ToList();
                 if (!yxjkJkds.Any())
                 {
@@ -123,6 +286,28 @@ namespace SSCA.ViewModel
             {
                 _yxjkJkds = value;
                 OnPropertyChanged("YxjkJkds");
+            }
+        }
+
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+
+            set
+            {
+                _isBusy = value;
+                OnPropertyChanged("IsBusy");
+            }
+        }
+
+        public YXJK_JKD SelectJkd
+        {
+            get { return _selectJkd; }
+
+            set
+            {
+                _selectJkd = value;
+                OnPropertyChanged("SelectJkd");
             }
         }
     }

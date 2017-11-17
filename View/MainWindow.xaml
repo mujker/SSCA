@@ -7,13 +7,125 @@
                    xmlns:navigation="clr-namespace:Telerik.Windows.Controls.Navigation;assembly=Telerik.Windows.Controls.Navigation"
                    xmlns:local="clr-namespace:SSCA"
                    navigation:RadWindowInteropHelper.ShowInTaskbar="True"
-                   Header="MainWindow" Height="768" Width="1024" WindowStartupLocation="CenterScreen">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="7*" />
-            <RowDefinition Height="3*" />
-        </Grid.RowDefinitions>
-        <telerik:RadGridView Grid.Row="0" ItemsSource="{Binding YxjkJkds}" />
-        <telerik:RadGridView Grid.Row="1" ItemsSource="{Binding ExceptionModels}" />
-    </Grid>
+                   navigation:RadWindowInteropHelper.Icon="../Resources/sniper.ico"
+                   Header="SSCA" Height="768" Width="1024" WindowStartupLocation="CenterScreen">
+    <telerik:EventToCommandBehavior.EventBindings>
+        <telerik:EventBinding Command="{Binding ClosedCommand}" EventName="Closed" RaiseOnHandledEvents="True"
+                              CommandParameter="{Binding}" />
+    </telerik:EventToCommandBehavior.EventBindings>
+    <telerik:RadBusyIndicator IsBusy="{Binding IsBusy}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <telerik:RadMenu VerticalAlignment="Top" IconColumnWidth="0">
+                <telerik:RadMenuItem Header="启停">
+                    <telerik:RadMenuItem Header="启动">
+                        <telerik:EventToCommandBehavior.EventBindings>
+                            <telerik:EventBinding Command="{Binding RmcCommand}" EventName="Click"
+                                                  RaiseOnHandledEvents="True" CommandParameter="启动" />
+                        </telerik:EventToCommandBehavior.EventBindings>
+                    </telerik:RadMenuItem>
+                    <telerik:RadMenuItem Header="停止">
+                        <telerik:EventToCommandBehavior.EventBindings>
+                            <telerik:EventBinding Command="{Binding RmcCommand}" EventName="Click"
+                                                  RaiseOnHandledEvents="True" CommandParameter="停止" />
+                        </telerik:EventToCommandBehavior.EventBindings>
+                    </telerik:RadMenuItem>
+                </telerik:RadMenuItem>
+                <telerik:RadMenuItem Header="配置" />
+            </telerik:RadMenu>
+            <telerik:RadDocking Grid.Row="1">
+                <telerik:RadDocking.DocumentHost>
+                    <telerik:RadSplitContainer>
+                        <telerik:RadPaneGroup>
+                            <telerik:RadPane Header="实时状态" PaneHeaderVisibility="Hidden" CanUserClose="False">
+
+                                <telerik:RadGridView ItemsSource="{Binding YxjkJkds}"
+                                                     ShowGroupPanel="False"
+                                                     AutoGenerateColumns="False"
+                                                     HorizontalAlignment="Stretch"
+                                                     VerticalAlignment="Stretch" IsReadOnly="True"
+                                                     CanUserSelect="True"
+                                                     SelectionMode="Single" SelectionUnit="FullRow"
+                                                     IsSynchronizedWithCurrentItem="True"
+                                                     SelectedItem="{Binding SelectJkd}">
+                                    <telerik:RadContextMenu.ContextMenu>
+                                        <telerik:RadContextMenu>
+                                            <telerik:RadContextMenu.Items>
+                                                <telerik:RadMenuItem Header="解密">
+                                                    <telerik:EventToCommandBehavior.EventBindings>
+                                                        <telerik:EventBinding Command="{Binding GridMenuCommand}"
+                                                                              EventName="Click"
+                                                                              RaiseOnHandledEvents="True"
+                                                                              CommandParameter="解密" />
+                                                    </telerik:EventToCommandBehavior.EventBindings>
+                                                </telerik:RadMenuItem>
+                                            </telerik:RadContextMenu.Items>
+                                        </telerik:RadContextMenu>
+                                    </telerik:RadContextMenu.ContextMenu>
+                                    <telerik:RadGridView.Columns>
+                                        <telerik:GridViewDataColumn Width="120" Header="JKD_NAME"
+                                                                    DataMemberBinding="{Binding Path=JKD_NAME}" />
+                                        <telerik:GridViewDataColumn Width="80" Header="JKD_ID"
+                                                                    DataMemberBinding="{Binding Path=JKD_ID}" />
+                                        <telerik:GridViewDataColumn Width="*" Header="JKD_VALUE"
+                                                                    DataMemberBinding="{Binding Path=JKD_VALUE}" />
+                                        <telerik:GridViewDataColumn Width="50" Header="RMI_ID"
+                                                                    DataMemberBinding="{Binding Path=RMI_ID}" />
+                                        <telerik:GridViewDataColumn Width="170" Header="CURR_TIME"
+                                                                    DataMemberBinding="{Binding Path=CURR_TIME}" />
+                                    </telerik:RadGridView.Columns>
+                                </telerik:RadGridView>
+
+                            </telerik:RadPane>
+                        </telerik:RadPaneGroup>
+                    </telerik:RadSplitContainer>
+                </telerik:RadDocking.DocumentHost>
+
+                <telerik:RadSplitContainer InitialPosition="DockedBottom">
+                    <telerik:RadPaneGroup>
+                        <telerik:RadPane Header="日志记录" CanUserClose="False">
+                            <telerik:RadGridView ItemsSource="{Binding ExceptionModels}" ShowGroupPanel="False"
+                                                 AutoGenerateColumns="False"
+                                                 HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Stretch" IsReadOnly="True"
+                                                 CanUserSelect="True"
+                                                 SelectionMode="Extended" SelectionUnit="FullRow"
+                                                 IsSynchronizedWithCurrentItem="True">
+                                <telerik:RadContextMenu.ContextMenu>
+                                    <telerik:RadContextMenu>
+                                        <telerik:RadContextMenu.Items>
+                                            <telerik:RadMenuItem Header="清空">
+                                                <telerik:EventToCommandBehavior.EventBindings>
+                                                    <telerik:EventBinding Command="{Binding GridMenuCommand}"
+                                                                          EventName="Click"
+                                                                          RaiseOnHandledEvents="True"
+                                                                          CommandParameter="清空" />
+                                                </telerik:EventToCommandBehavior.EventBindings>
+                                            </telerik:RadMenuItem>
+                                        </telerik:RadContextMenu.Items>
+                                    </telerik:RadContextMenu>
+                                </telerik:RadContextMenu.ContextMenu>
+                                <telerik:RadGridView.SortDescriptors>
+                                    <telerik:SortDescriptor Member="ExTime"
+                                                            SortDirection="Descending" />
+                                </telerik:RadGridView.SortDescriptors>
+                                <telerik:RadGridView.Columns>
+                                    <telerik:GridViewDataColumn Width="auto" Header="ExTime"
+                                                                DataMemberBinding="{Binding Path=ExTime}" />
+                                    <telerik:GridViewDataColumn Width="auto" Header="ExLevel"
+                                                                DataMemberBinding="{Binding Path=ExLevel}" />
+                                    <telerik:GridViewDataColumn Width="*" Header="ExMessage"
+                                                                DataMemberBinding="{Binding Path=ExMessage}" />
+                                </telerik:RadGridView.Columns>
+                            </telerik:RadGridView>
+
+                        </telerik:RadPane>
+                    </telerik:RadPaneGroup>
+                </telerik:RadSplitContainer>
+            </telerik:RadDocking>
+        </Grid>
+    </telerik:RadBusyIndicator>
 </telerik:RadWindow>
