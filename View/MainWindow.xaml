@@ -20,7 +20,6 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <telerik:RadMenu VerticalAlignment="Top">
-                <telerik:RadMenuItem Header="启停">
                     <telerik:RadMenuItem Header="启动">
                         <telerik:EventToCommandBehavior.EventBindings>
                             <telerik:EventBinding Command="{Binding RmcCommand}" EventName="Click"
@@ -33,7 +32,6 @@
                                                   RaiseOnHandledEvents="True" CommandParameter="停止" />
                         </telerik:EventToCommandBehavior.EventBindings>
                     </telerik:RadMenuItem>
-                </telerik:RadMenuItem>
                 <telerik:RadMenuItem Header="参数" >
                     <telerik:RadMenuItem Header="转存Redis" IsCheckable="True" IsChecked="{Binding RedisFlag, Mode=TwoWay}">
                     </telerik:RadMenuItem>
