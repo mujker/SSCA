@@ -17,6 +17,8 @@ namespace SSCA.Common
             RmiIp = ConfigurationManager.AppSettings["rmi-ip"];
             RmiPort = Convert.ToInt32(ConfigurationManager.AppSettings["rmi-port"]);
             CryptKey = ConfigurationManager.AppSettings["CryptKey"];
+            Crypt = Convert.ToBoolean(ConfigurationManager.AppSettings["Crypt"]);
+            SendStr = ConfigurationManager.AppSettings["SendStr"];
             JkdSql = ConfigurationManager.AppSettings["JkdSql"];
             DelayTime = Convert.ToInt32(ConfigurationManager.AppSettings["DelayTime"]);
             ConnectStr = ConfigurationManager.ConnectionStrings["ConnStr"].ConnectionString;
@@ -50,8 +52,18 @@ namespace SSCA.Common
         /// <summary>
         /// 加密/解密字符串
         /// </summary>
-        public static string CryptKey;
+        public static string CryptKey;        
+        
+        /// <summary>
+        /// 是否加密
+        /// </summary>
+        public static bool Crypt;
 
+        /// <summary>
+        /// socket发送数据前缀
+        /// </summary>
+        public static string SendStr;
+        
         /// <summary>
         /// 查询换热站sql
         /// </summary>

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Dapper;
@@ -16,7 +14,6 @@ using SSCA.Model;
 using SSCA.Socket;
 using SSCA.View;
 using SuperSocket.ClientEngine;
-using Telerik.Windows;
 using Telerik.Windows.Controls;
 
 namespace SSCA.ViewModel
@@ -147,8 +144,8 @@ namespace SSCA.ViewModel
                         {
                             if (connected)
                             {
-                                //加密
-                                var enStr = DataPacketCodec.Encode($"ri,{jkd.JKD_ID}", Settings.CryptKey) + "#";
+                                //获取发送字符串
+                                var enStr = GetSendStr(jkd.JKD_ID);
                                 // Send data to the server
                                 client.Send(Encoding.UTF8.GetBytes(enStr));
                             }
@@ -175,6 +172,21 @@ namespace SSCA.ViewModel
                     WriteLog($"{jkd.JKD_NAME} socket close", ExEnum.Infor);
                 });
             });
+        }
+
+        /// <summary>
+        /// 返回发送字符串
+        /// </summary>
+        /// <param name="jkdid">监控点ID</param>
+        /// <returns></returns>
+        private string GetSendStr(string jkdid)
+        {
+            var senStr = $"{Settings.SendStr},{jkdid}";
+            if (Settings.Crypt)
+            {
+                senStr = DataPacketCodec.Encode(senStr, Settings.CryptKey) + "#";
+            }
+            return senStr;
         }
 
         /// <summary>
